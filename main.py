@@ -17,6 +17,7 @@ def main():
     readSQL(connection, cursor, os.path.join(directory, "data/p1-tables.sql"))
     readSQL(connection, cursor, os.path.join(directory, "data/a2-data.sql"))
 
+
     cursor.execute("SELECT * FROM trucks;")
     rows = cursor.fetchall()
     for entry in rows:
