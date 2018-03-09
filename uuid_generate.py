@@ -3,15 +3,12 @@ import requests
 
 
 def main():
-    r = requests.get('https://randomuser.me/api/?results=100')
-    r.json()
+    r = requests.get('https://randomuser.me/api/?nat=us&results=100').json()
 
-    for k,v in r:
-        print(k, v)
-
-    #for i in range(0, 100):
-        
-    #print(str(uuid4()).split('-')[0])
+    for result in r['results']:
+        name = result['name']
+        user = result['login']
+        print("NAME: {}, USER: {}, PASS: {}".format(name['first'] + ' ' + name['last'], user['username'], user['password']))
         
 
 if __name__ == "__main__":
