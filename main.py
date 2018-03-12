@@ -7,7 +7,7 @@ from database.models import readSQL
 def main():
     directory = os.path.dirname(__file__)
 
-    database = os.path.join(directory, "data/database.db")
+    database = os.path.join(directory, "data/waste_management.db")
     connection = sqlite3.connect(database)
     connection.row_factory = sqlite3.Row
     cursor = connection.cursor()
