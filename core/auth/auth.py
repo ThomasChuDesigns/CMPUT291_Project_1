@@ -87,6 +87,8 @@ class AccountManager(User):
             for attr in entries.keys():
                 print('{:<24}'.format(entries[attr]), end=' ')
             print()
+        
+        return data
 
 
     def addMasterAccount(self, customer_name, contact, customer_type, start, end):
@@ -104,10 +106,13 @@ class AccountManager(User):
         if not self.isManaging(account_no):
             return None
 
+        # generate a service_no using previous entries
+        service_no = generateServiceID(self.controller)
+
         # insert new entry into service agreements table
         self.controller.cursor.execute("""
         INSERT INTO service_agreements VALUES(?, ?, ?, ?, ?, ?, ?, ?)
-        """, (generateServiceID(self.controller), account_no, location, waste_type, schedule, contact, cost, price,))
+        """, (service_no, account_no, location, waste_type, schedule, contact, cost, price,))
 
         # update total_amount of the master account
         self.controller.cursor.execute("""
@@ -116,6 +121,8 @@ class AccountManager(User):
         """, (price, account_no,))
         
         self.controller.connection.commit()
+
+        return service_no
         
 
     
@@ -130,25 +137,61 @@ class AccountManager(User):
         FROM service_agreements WHERE master_account = ?
         """, (account_no, ))
 
-        result = self.controller.cursor.fetchone()
-
-        # display report of a account
-        for col_name in getColumnNames(self.controller.cursor):
-            print('{:<24}'.format(col_name), end=' ')
-        print('\n')
-
-        print('{:<24} {:<24} {:<24} {:<24}'.format(result['count'], result['total_price'], result['total_cost'], result['types']))
+        return self.controller.cursor.fetchone()
     
 
-class Supervisor(AccountManager):
+class Supervisor(User):
     def __init__(self, controller, userid):
-        AccountManager.__init__(self, controller, userid)
+        User.__init__(self, controller, userid)
 
-    def getManagedAccounts(self):
-        pass
+    def isSupervising(self, mgr_id):
+        return mgr_id in self.getSupervisedManagers()
+    
+    def getSupervisedAccounts(self):
+        # queries all account id's under account managers supervised by this user
+        # returns a list of the account id's
 
-    def getAccountManagerReport(self, personnel_id):
-        pass
+        self.controller.cursor.execute("SELECT account_no FROM accounts WHERE account_mgr IN (SELECT pid FROM personnel WHERE supervisor_pid = ?)", (self.user_id,))
+        return list(map(lambda x: x['account_no'], self.controller.cursor.fetchall()))
+
+    def getSupervisedManagers(self):
+        # queries all pid under supervision of session user id
+        self.controller.cursor.execute("SELECT pid FROM personnel WHERE supervisor_pid = ?", (self.user_id,))
+        return list(map(lambda x: x['pid'], self.controller.cursor.fetchall())) 
+
+    def addMasterAccount(self, mgr_id, customer_name, contact, customer_type, start, end):
+        # inserts a new master account into accounts table under a supervised manager
+        # returns the new master account's id
+
+        if not self.isSupervising(mgr_id):
+            print("You are not supervising this manager!")
+            return None
+
+        new_id = generateID()
+
+        # insert new entry to accounts using params given
+        self.controller.cursor.execute("INSERT INTO accounts VALUES(?, ?, ?, ?, ?, ?, ?, 0)", 
+        (new_id, self.user_id, customer_name, contact, customer_type, start, end,))
+
+        # commit changes to database
+        self.controller.connection.commit()
+        return new_id
+
+
+    def getSummaryReport(self, account_no):
+        # if successful, returns a dictionary of reported values (# of services, total price, total cost, waste types)
+        if not account_no in self.getSupervisedAccounts():
+            print("You do not have permission to access account: {}".format(account_no))
+            return None
+        
+        # querys total services, total price, total costs, types of waste for a given account
+        self.controller.cursor.execute("""
+        SELECT COUNT(*) AS count, SUM(price) AS total_price, SUM(internal_cost) AS total_cost, COUNT(DISTINCT waste_type) AS types 
+        FROM service_agreements WHERE master_account = ?
+        """, (account_no,))
+
+        return self.controller.cursor.fetchone()
+
 
 class Dispatcher(User):
     role = 'dispatcher'

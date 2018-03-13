@@ -56,15 +56,7 @@ def generateAccountManagers(db_controller):
     db_controller.connection.commit()
 
 def main():
-    # creates a binary value to store into database
-    hash_name = 'sha256'
-    salt = 'ssdirf993lksiqb4'
-    iterations = 100000
-
-    password = 'password'
-
-    dk = pbkdf2_hmac(hash_name, bytearray(password, 'ascii'), bytearray(salt, 'ascii'), iterations)
-    result = int(binascii.hexlify(dk), 16)
+    print(generateHashedPassword('notpassword'))
 
 if __name__ == "__main__":
     main()

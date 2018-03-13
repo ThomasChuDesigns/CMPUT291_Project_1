@@ -19,20 +19,25 @@ def main():
     # try logging in
     session = auth.canLogin(test_db, 'd4nny', 'password')
 
-    x = session.addMasterAccount('thomas', '(780) 111-1111', 'industrial', '2018-02-25', '2018-03-25')
-    print("Master Account Key: {}".format(x))
+    assert session
+    assert session.addMasterAccount('thomas', '(780) 111-1111', 'industrial', '2018-02-25', '2018-03-25')
 
-    print("Accounts managed by {}:".format(session.user_id))
-    print("\n".join(session.getManagedAccounts()))
+    assert not session.createServiceAgreement('1', 'McDonalds', 'mixed waste', 'everyday', '(780) 111-1111', 250, 350)
+    assert not session.createServiceAgreement('1', 'Burger King', 'paper', 'everyday', '(780) 111-1111', 250, 237)
+    assert session.createServiceAgreement('0', 'Wendys', 'metal', 'everyday', '(780) 111-1111', 30, 50) == 0
+    assert session.createServiceAgreement('0', 'Home', 'mixed waste', 'everyday', '(780) 111-1111', 30, 50) == 1
 
-    session.createServiceAgreement(x, 'McDonalds', 'mixed waste', 'everyday', '(780) 111-1111', 250, 350)
-    session.createServiceAgreement(x, 'Burger King', 'paper', 'everyday', '(780) 111-1111', 250, 237)
-    session.createServiceAgreement(x, 'Wendys', 'metal', 'everyday', '(780) 111-1111', 250, 123)
-    session.createServiceAgreement(x, 'Home', 'mixed waste', 'everyday', '(780) 111-1111', 43, 235)
+    assert not session.getServiceAgreements('1')
+    assert session.getServiceAgreements('0')
 
-    session.getServiceAgreements(x)
-    print()
-    session.getSummaryReport(x)
+    summary = session.getSummaryReport('0')
+    
+    assert summary['count'] == 2
+    assert summary['total_price'] == 100
+    assert summary['total_cost'] == 60
+    assert summary['types'] == 2
+
+    print("All test cases passed for account managers!")
 
 if __name__ == "__main__":
     main()
