@@ -11,7 +11,7 @@ def getColumnNames(cursor):
 def displayColumns(controller):
     # display header
     for col_name in getColumnNames(controller.cursor):
-        print('{:<24}'.format(col_name), end=' ')
+        print('{:<18}'.format(col_name), end=' ')
     print()
 
 def displayRow(controller, result, header = True):
@@ -23,7 +23,7 @@ def displayRow(controller, result, header = True):
 
     for entry in result:
         if entry == None: continue
-        print('{:<24}'.format(entry), end=' ')
+        print('{:<18}'.format(entry), end=' ')
     print()
 
 def displayQuery(controller, results):

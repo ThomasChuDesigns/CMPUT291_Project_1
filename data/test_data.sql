@@ -13,6 +13,7 @@ INSERT INTO accounts VALUES('0','111111','Bob','(201) 111-1111','industrial','20
 INSERT INTO accounts VALUES('1','111110','Jane','(201) 222-2222','residential','2006-05-19','2018-01-01',837646.52);
 
 INSERT INTO users VALUES('12345', 'admin', 'owner', '0b101011011000010000001001100011011101101100101110110001110100000111011000111111111111111100110001010111011011100110100101010001110101001111011010011111001110001000111110011111111011011011100000111100000010101011001001101000001010000100010100101111111101');
+INSERT INTO users VALUES('300', 'dispatcher', 'lol', '0b10001110011101110101011000110000010110001010000100010110110101001010110010001101000001110001111000000010111011001111011010011000001100110011110010100101111101000011001010110000100010101110111101110010001011000011111111010000011010011100111000110110010111');
 INSERT INTO personnel VALUES('12', 'Add Me 1', 'test1@gmail.com', 'Not Windsor Drive 1', '0');
 INSERT INTO personnel VALUES('13', 'Add Me 2', 'test2@gmail.com', 'Not Windsor Drive 2', '0');
 INSERT INTO personnel VALUES('14', 'Add Me 3', 'test3@gmail.com', 'Not Windsor Drive 3', '0');
@@ -23,3 +24,22 @@ INSERT INTO service_agreements VALUES('0', '0', 'Wendys', 'metal', 'everyday', '
 INSERT INTO service_agreements VALUES('1', '0', 'Wendys', 'metal', 'everyday', '(780) 111-1111', 30, 50);
 INSERT INTO service_agreements VALUES('2', '1', 'Wendys', 'paper', 'everyday', '(780) 111-1111', 20, 50);
 INSERT INTO service_agreements VALUES('3', '1', 'Wendys', 'mixed waste', 'everyday', '(780) 111-1111', 0, 50);
+
+INSERT INTO containers VALUES('3', 'roll-off', '2017-05-23');
+INSERT INTO containers VALUES('2', 'roll-off', '2017-05-23');
+INSERT INTO containers VALUES('1', 'roll-off', '2017-05-23');
+
+INSERT INTO container_waste_types VALUES('3', 'metal');
+INSERT INTO container_waste_types VALUES('2', 'paper');
+INSERT INTO container_waste_types VALUES('1', 'metal');
+
+INSERT INTO service_fulfillments VALUES('2018-3-11', '1', '0', '1', '1', '2', '1');
+INSERT INTO service_fulfillments VALUES('2018-3-10', '0', '0', '1', '1', '1', '0000');
+
+INSERT INTO personnel VALUES('100', 'Driver 1', 'test2@gmail.com', 'Not Windsor Drive 2', '0');
+INSERT INTO personnel VALUES('101', 'Driver 2', 'test3@gmail.com', 'Not Windsor Drive 3', '0');
+INSERT INTO drivers VALUES('100','Single Trailer','12');
+INSERT INTO drivers VALUES('101','Single Trailer','0');
+
+INSERT INTO trucks VALUES('12','McLaren F1','front loader');
+INSERT INTO trucks VALUES('14','Benz F1','front loader');

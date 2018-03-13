@@ -346,6 +346,72 @@ class Dispatcher(User):
     def __init__(self, controller, userid):
         User.__init__(self, controller, userid)
 
+    def isAvailableContainer(self, service_no, cid):
+        self.controller.cursor.execute("""
+        SELECT waste_type FROM service_agreements WHERE service_no = ?
+        """, (service_no,))
+        waste_type = self.controller.cursor.fetchone()['waste_type']
+
+        self.controller.cursor.execute("""
+        SELECT c.container_id
+        FROM (containers JOIN container_waste_types USING(container_id)) c
+        WHERE c.waste_type = ? AND NOT EXISTS (SELECT * FROM service_fulfillments s WHERE s.cid_drop_off = c.container_id)
+        UNION
+        SELECT c.container_id
+        FROM (containers JOIN container_waste_types USING(container_id)) c
+        WHERE c.waste_type = ? AND 
+        (SELECT MAX(date_time) FROM service_fulfillments s WHERE s.cid_pick_up = c.container_id)
+        >
+        (SELECT MAX(date_time) FROM service_fulfillments s WHERE s.cid_drop_off = c.container_id) 
+        """, (waste_type, waste_type,))
+
+        return self.controller.cursor.fetchall()
+
+    def getAvailableAgreements(self):
+        # from all services select only those whose service number is not in fulfillments table
+        self.controller.cursor.execute("SELECT service_no FROM service_agreements EXCEPT SELECT service_no FROM service_fulfillments")
+        return self.controller.cursor.fetchall()
+    
+    def getTruckDriver(self, driver_id):
+        # selects the first entry of a truck_id which driver owns
+        self.controller.cursor.execute("""
+        SELECT owned_truck_id FROM drivers WHERE pid = ? 
+        AND owned_truck_id IN (SELECT truck_id FROM trucks)
+        """, (driver_id,))
+        return self.controller.cursor.fetchone()
+
+    def getPublicTrucks(self):
+        # take only truck_id from trucks table where truck_id does not exist in any drivers entry
+        self.controller.cursor.execute("""
+        SELECT truck_id FROM trucks EXCEPT SELECT owned_truck_id FROM drivers 
+        """)
+
+        return self.controller.cursor.fetchall()
+
+    def getContainerToPickUp(self, service_no):
+        # returns the container to be picked up from service_agreements location
+
+        self.controller.cursor.execute("""
+        SELECT location FROM service_agreements WHERE service_no = ?
+        """, (service_no,))
+        location = self.controller.cursor.fetchone()['location']
+
+        self.controller.cursor.execute("""
+        SELECT c.container_id FROM containers c WHERE
+        (SELECT IFNULL(MAX(date_time), 0) FROM service_agreements JOIN service_fulfillments USING(service_no) WHERE cid_drop_off = c.container_id AND location = ?) > 
+        (SELECT IFNULL(MAX(date_time), 0) FROM service_agreements JOIN service_fulfillments USING(service_no) WHERE cid_pick_up = c.container_id AND location = ?)
+         
+        """,(location,location,))
+        cid = self.controller.cursor.fetchone()
+
+        # return a dummy container if no results found else return cid
+        if not cid: return '0000'
+        return cid['container_id']
+
+    def getAccountFromAgreement(self, service_no):
+        self.controller.cursor.execute("SELECT master_account FROM service_agreements WHERE service_no = ?", (service_no,))
+        return self.controller.cursor.fetchone()['master_account']
+    
     def createFulfillment(self):
         print('List of Service Agreements:')
         self.printAllServices()
@@ -364,31 +430,48 @@ class Dispatcher(User):
         insert_fulfillment = "INSERT INTO service_fulfillments date_time, master_acc, service_no, truck_id, driver_id, cid_drop_off, cid_pick_up) VALUES (:master_account, :sevice_no, :truck_id, :driver_id, :cid_drop_off, :cid_pick_up);"
         self.controller.cursor.execute(insert_fulfillment, {"master_account":master_acc, "service_no":service_no, "truck_id":truck_id, "driver_id":driver_id, "cid_drop_off":cid_drop_off, "cid_pick_up":cid_pick_up})
         self.controller.commit() 
-        
-    def printAllServices(self):
-        self.controller.cursor.execute("SELECT service_no FROM service_agreements")
-        rows = self.controller.cursor.fetchall()
-        print(rows)
-    
-    def getMasterAccount(self,service_num):
-        self.controller.cursor.execute("SELECT master_account FROM service_agreements")
-        row = self.controller.cursor.fetchone()  
-        return row        
 
-    def printAllDrivers(self):
-        self.controller.cursor.execute("SELECT p.name, d.owned_truck_id FROM personnel p, drivers d WHERE d.pid = p.pid")
-        rows = self.controller.cursor.fetchall()
-        print(rows)
-        
-    def getDriverTruck(self, driver):
-        self.controller.cursor.execute("SELECT d.owned_truck_id FROM drivers d, personnel p WHERE p.name = driver AND d.pid = p.pid")
-        row = self.controller.cursor.fetchone()
-        return row[0]
-    
-    def printAllTrucks(self):
-        self.controller.cursor.execute("SELECT truck_id FROM trucks WHERE NOT EXISTS(SELECT truck_id FROM trucks, drivers d WHERE truck_id = d.owned_truck_id)") 
-        rows = self.controller.cursor.fetchall()
-        print(rows)
+    def options(self):
+        print('-'*36)
+        print("You have 1 options, enter the number corresponding to it:")
+        print("Create a service fulfillment (1)")
+        print("Enter 'exit' to logout")
+        print('-'*36)
+
+        self.choice = input('Enter an option: ')
+
+        if self.choice == '1':
+            print('Agreements available for fulfillment:')
+            displayQuery(self.controller, self.getAvailableAgreements())
+
+            service_no = input('Enter service_no to fulfill: ')
+            account_no = self.getAccountFromAgreement(service_no)
+            driver = input('Enter driver\'s id to fulfill task: ')
+
+            # determine if driver owns a truck
+            truck = self.getTruckDriver(driver)
+            if not truck:
+                print('List of available trucks: ')
+                displayQuery(self.controller, self.getPublicTrucks())
+                truck = input('Enter truck_id for driver to use: ')
+            
+            # find a container to be picked up at the location
+            pick_up = self.getContainerToPickUp(service_no)
+
+            # drop off a container that is available
+            drop_off = input('Enter cid for drop off: ')
+            if not self.isAvailableContainer(service_no, drop_off): 
+                print('container is not available for drop off!')
+                return
+            
+            date = input('Enter date for fulfillment (YYYY-MM-DD): ')
+
+            self.controller.cursor.execute("INSERT INTO service_fulfillments VALUES(?, ?, ?, ?, ?, ?, ?);",
+            (date, account_no, service_no, truck, driver, drop_off, pick_up,))
+
+            self.controller.connection.commit()
+            self.controller.cursor.execute("SELECT * FROM service_fulfillments")
+            displayQuery(self.controller, self.controller.cursor.fetchall())
     
 class Driver(User):
     role = 'driver'

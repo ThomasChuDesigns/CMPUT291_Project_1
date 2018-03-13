@@ -4,14 +4,14 @@ from hashlib import pbkdf2_hmac
 import binascii
 import os
 import random
-import requests
 
 from core.database.controller import Controller
 from core.auth.util import generateID, generateHashedPassword
 
 def generateUsers(role):
     # get json file of user queries from randomuser.me
-    r = requests.get('https://randomuser.me/api/?nat=us&results=10&inc=name,login,email,phone').json()
+    r = 1
+    #requests.get('https://randomuser.me/api/?nat=us&results=10&inc=name,login,email,phone').json()
 
     # parse the results of json file and create a model for extract data from
     results = r['results']
@@ -56,7 +56,7 @@ def generateAccountManagers(db_controller):
     db_controller.connection.commit()
 
 def main():
-    print(generateHashedPassword('admin'))
+    print(generateHashedPassword('dispatcher'))
 
 if __name__ == "__main__":
     main()

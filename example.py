@@ -13,19 +13,23 @@ from core.auth.auth import canLogin, loginPrompt
 
 def main():
     # create a controller to test.db
-    db_directory = os.path.dirname(__file__) + '/data'
+    db_directory = os.path.join(os.path.dirname(__file__), 'data/')
     test_db = Controller(db_directory, 'test.db')
 
     # insert schema and data into test db
     readSQL(test_db, os.path.join(db_directory, 'p1-tables.sql'))
     readSQL(test_db, os.path.join(db_directory, 'test_data.sql'))
 
-    # try logging in
-    session = loginPrompt(test_db)
+    session = canLogin(test_db, 'thomas', 'notpassword')
+    print(session.getContainerToPickUp('0'))
 
-    status = session.show()
-    while(status):
-        status = session.show()
+    # try logging in
+    #session = loginPrompt(test_db)
+
+    #print(session.getAccountFromAgreement('3'))
+    #status = session.show()
+#    while(status):
+#        status = session.show()
 
     test_db.connection.close()
 

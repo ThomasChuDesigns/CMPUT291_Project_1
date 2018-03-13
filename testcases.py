@@ -1,27 +1,20 @@
 import sqlite3, os
 
 from core.database.controller import Controller
-from core.database.util import readSQL
+from core.database.util import readSQL, displayQuery, displayRow
 
 from core.auth.auth import canLogin
 
-# An example testcase, logging in to an account from example_data.sql and ran on test.db 
-#
-#
-#
-#
+db_directory = os.path.join(os.path.dirname(__file__), 'data/')
+# test cases to make sure program works xd
 
-def admin():
-    # create a controller to test.db
-    db_directory = os.path.dirname(__file__) + '/data'
-    test_db = Controller(db_directory, 'test.db')
-
+def admin(db):
     # insert schema and data into test db
-    readSQL(test_db, os.path.join(db_directory, 'p1-tables.sql'))
-    readSQL(test_db, os.path.join(db_directory, 'test_data.sql'))
+    readSQL(db, os.path.join(db_directory, 'p1-tables.sql'))
+    readSQL(db, os.path.join(db_directory, 'test_data.sql'))
 
     # try logging in
-    session = canLogin(test_db, 'owner', 'admin')
+    session = canLogin(db, 'owner', 'admin')
     assert session
 
     assert session.role == 'admin'
@@ -33,17 +26,13 @@ def admin():
 
     print("Test case for admin passed!")
 
-def accm():
-    # create a controller to test.db
-    db_directory = os.path.dirname(__file__) + '/data'
-    test_db = Controller(db_directory, 'test.db')
-
+def accm(db):
     # insert schema and data into test db
-    readSQL(test_db, os.path.join(db_directory, 'p1-tables.sql'))
-    readSQL(test_db, os.path.join(db_directory, 'test_data.sql'))
+    readSQL(db, os.path.join(db_directory, 'p1-tables.sql'))
+    readSQL(db, os.path.join(db_directory, 'test_data.sql'))
 
     # try logging in
-    session = canLogin(test_db, 'd4nny', 'password')
+    session = canLogin(db, 'd4nny', 'password')
 
     assert session
     assert session.addMasterAccount('thomas', '(780) 111-1111', 'industrial', '2018-02-25', '2018-03-25')
@@ -64,17 +53,14 @@ def accm():
     print("All test cases passed for account managers!")
 
 
-def supervisor():
-    # create a controller to test.db
-    db_directory = os.path.dirname(__file__) + '/data'
-    test_db = Controller(db_directory, 'test.db')
+def supervisor(db):
 
     # insert schema and data into test db
-    readSQL(test_db, os.path.join(db_directory, 'p1-tables.sql'))
-    readSQL(test_db, os.path.join(db_directory, 'test_data.sql'))
+    readSQL(db, os.path.join(db_directory, 'p1-tables.sql'))
+    readSQL(db, os.path.join(db_directory, 'test_data.sql'))
 
     # try logging in
-    session = canLogin(test_db, 'thomas', 'notpassword')
+    session = canLogin(db, 'thomas', 'notpassword')
 
     assert session.getSupervisedAccounts()
     assert session.getSupervisedManagers()
@@ -90,11 +76,30 @@ def supervisor():
 
     print('All test cases passed for supervisors!')
 
+def dispatcher(db):
+
+    # insert schema and data into test db
+    readSQL(db, os.path.join(db_directory, 'p1-tables.sql'))
+    readSQL(db, os.path.join(db_directory, 'test_data.sql'))
+
+    session = canLogin(db, 'lol', 'dispatcher')
+    assert session.getPublicTrucks()
+    assert session.getTruckDriver('100')
+    assert session.getAvailableAgreements()
+
+    print('All test cases passed for dispatcher!')
 
 def main():
-    admin()
-    accm()
-    supervisor()
+    # create a controller to test.db
+    
+    test_db = Controller(db_directory, 'test.db')
+
+    # run role testcases here
+    admin(test_db)
+    accm(test_db)
+    supervisor(test_db)
+    dispatcher(test_db)
+
 
 if __name__ == "__main__":
     main()
