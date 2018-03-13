@@ -15,3 +15,13 @@ def generateHashedPassword(password):
 def generateID():
     # creates a uuid for new users
     return str(uuid4()).split('-')[0]
+
+def generateServiceID(controller):
+    controller.cursor.execute("SELECT CAST(service_no AS INTEGER) AS no_id FROM service_agreements ORDER BY no_id DESC LIMIT 1")
+    result = controller.cursor.fetchone()
+
+    # no entries create one
+    if not result:
+        return 0
+        
+    return result[0] + 1

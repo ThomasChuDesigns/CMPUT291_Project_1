@@ -4,3 +4,6 @@ def readSQL(controller, sql_file):
         controller.connection.commit()
         f.close()
 
+
+def getColumnNames(cursor):
+    return list(map(lambda x: x[0], cursor.description))

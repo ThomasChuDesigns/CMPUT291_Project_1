@@ -4,6 +4,7 @@ from core.database.controller import Controller
 from core.database.models import readSQL
 
 from core.auth.auth import canLogin
+
 # An example testcase, logging in to an account from example_data.sql and ran on test.db 
 #
 #
