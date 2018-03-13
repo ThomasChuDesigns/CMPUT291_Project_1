@@ -56,13 +56,14 @@ class AccountManager(User):
     role = 'Account Manager'
 
     def getManagedAccounts(self):
-        self.controller.cursor.execute("SELECT account_no FROM accounts WHERE account_mgr = ?", self.user_id)
+        # queries all master accounts under account manager management
+        self.controller.cursor.execute("SELECT account_no FROM accounts WHERE account_mgr = ?", (self.user_id,))
         return self.controller.cursor.fetchall()
 
     def getMasterAccount(self,account_no):
         # get information of master account if account is under user's management
         if account_no in self.getManagedAccounts():
-            self.controller.cursor.execute("SELECT * FROM accounts WHERE account_no = ?", account_no)
+            self.controller.cursor.execute("SELECT * FROM accounts WHERE account_no = ?", (account_no,))
             data = self.controller.cursor.fetchone()
 
         else:
@@ -70,7 +71,7 @@ class AccountManager(User):
         return None
 
     def addMasterAccount(self, customer_name, customer_info, customer_type, end_date, total_amount):
-        new_id = 'AC' + str(uuid4()).split('-')[0]
+        new_id = str(uuid4()).split('-')[0]
         self.controller.cursor.execute("INSERT INTO accounts VALUES(?, ?, ?, strftime('now'), ?, ?)", (new_id, customer_name, customer_info, customer_type, end_date, total_amount))
         self.controller.connection.commit()
         

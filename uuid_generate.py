@@ -5,21 +5,7 @@ import os
 import random
 
 from database.controller import Controller
-
-def generateHashedPassword(password):
-    # creates a binary value to store into database
-    hash_name = 'sha256'
-    salt = 'ssdirf993lksiqb4'
-    iterations = 100000
-
-    dk = pbkdf2_hmac(hash_name, bytearray(password, 'ascii'), bytearray(salt, 'ascii'), iterations)
-    binary_value = bin(int.from_bytes(dk, 'big'))
-
-    return binary_value
-
-def generateID():
-    # creates a uuid for new users
-    return str(uuid4()).split('-')[0]
+from auth.util import generateID, generateHashedPassword
 
 def generateUsers(role):
     # get json file of user queries from randomuser.me
@@ -37,7 +23,7 @@ def generateUsers(role):
                     'role': role}, results))
 
     # write to txt file
-    with open('./user_log/results_{}.txt'.format(role.split(" ")[0]), 'w') as f:
+    with open('./user_log/results_{}.txt'.format(role.split(" ")[0]), 'a') as f:
         for col in parsed[0].keys():
             f.write('{:<24} '.format(col))
         f.write('\n\n')
