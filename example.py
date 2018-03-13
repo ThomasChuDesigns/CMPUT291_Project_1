@@ -1,9 +1,9 @@
 import sqlite3, os
 
 from core.database.controller import Controller
-from core.database.util import readSQL
+from core.database.util import readSQL, displayQuery, displayRow
 
-from core.auth.util import canLogin
+from core.auth.auth import canLogin, loginPrompt
 
 # An example testcase, logging in to an account from example_data.sql and ran on test.db 
 #
@@ -21,10 +21,13 @@ def main():
     readSQL(test_db, os.path.join(db_directory, 'test_data.sql'))
 
     # try logging in
-    session = canLogin(test_db, 'd4nny', 'password')
-    if(session and session.user_id == '111111'):
-        print('Example test case passed!')
+    session = loginPrompt(test_db)
 
+    status = session.show()
+    while(status):
+        status = session.show()
+
+    test_db.connection.close()
 
 if __name__ == "__main__":
     main()

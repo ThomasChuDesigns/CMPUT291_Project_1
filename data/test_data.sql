@@ -3,7 +3,7 @@ INSERT INTO personnel VALUES('111111','Dan Brown','matloff@sbcglobal.net','Winds
 INSERT INTO account_managers VALUES('111111','large accounts manager','8th Street South');
 
 INSERT INTO users VALUES('111110', 'account manager', 'bobby', '0b1100010101010111100110011001010010110111110101011110011111110010011111011011001000110011000110110101000100111001010111100100011110111100111110111111100101101111001001000101101110011111110111010000101110100101000100101011110100001100100100010001010010010000');
-INSERT INTO personnel VALUES('111110','Bushy Brown','bby@sbcglobal.net','Windsor Drive','0');
+INSERT INTO personnel VALUES('111110','Bushy Brown','bby@sbcglobal.net','Windsor Drive','222222');
 INSERT INTO account_managers VALUES('111110','medium accounts manager','8th Street South');
 
 INSERT INTO users VALUES('222222', 'supervisor', 'thomas', '0b1000001100101000100101101100000101001111001000000101000110010011011100001111111110101001101111010100011000000001001111001000110000110100011011110100001100011011010110011011101001011111111001001010011100000100100001000001000011111010101101000010100010001011');
@@ -18,3 +18,8 @@ INSERT INTO personnel VALUES('13', 'Add Me 2', 'test2@gmail.com', 'Not Windsor D
 INSERT INTO personnel VALUES('14', 'Add Me 3', 'test3@gmail.com', 'Not Windsor Drive 3', '0');
 INSERT INTO account_managers VALUES('13','medium accounts manager','69th Street South');
 INSERT INTO drivers VALUES('14','bus school','111');
+
+INSERT INTO service_agreements VALUES('0', '0', 'Wendys', 'metal', 'everyday', '(780) 111-1111', 30, 50);
+INSERT INTO service_agreements VALUES('1', '0', 'Wendys', 'metal', 'everyday', '(780) 111-1111', 30, 50);
+INSERT INTO service_agreements VALUES('2', '1', 'Wendys', 'paper', 'everyday', '(780) 111-1111', 20, 50);
+INSERT INTO service_agreements VALUES('3', '1', 'Wendys', 'mixed waste', 'everyday', '(780) 111-1111', 0, 50);

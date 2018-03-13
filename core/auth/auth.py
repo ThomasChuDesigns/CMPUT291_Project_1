@@ -2,7 +2,7 @@ from hashlib import pbkdf2_hmac
 from uuid import uuid4
 
 from .util import generateHashedPassword, generateID, generateServiceID
-from core.database.util import getColumnNames
+from core.database.util import getColumnNames, displayQuery, displayRow
 
 # authenticates user and creates new user instance if credentials are correct
 def canLogin(controller, username, password):
@@ -25,12 +25,25 @@ def canLogin(controller, username, password):
     if binary_hash == candid['password']:
         return user_types[candid['role']](controller, candid['user_id'])
 
-    print('Login Unsuccessful')
     return None
+
+def loginPrompt(controller):
+    attempts = 0
+    while(attempts < 3):
+        username = input('Enter Username: ')
+        password = input('Enter Password: ')
+        session = canLogin(controller, username, password)
+
+        if session: return session  # successfully logged in
+        
+        attempts += 1
+        print('Login Unsuccessful ({}) attempts left'.format(3 - attempts))
+
 
 class User:
 
     def __init__(self, controller, userid):
+        self.choice = None
         self.controller = controller
         self.user_id = userid
 
@@ -40,11 +53,27 @@ class User:
     def options(self):
         pass
 
+    def show(self):
+
+        # WRITE YOUR TASKS IN OPTIONS FUNCTION
+        self.options()
+
+        # logout is universal so leave it here
+        if self.choice == 'exit':
+            print('logging out...')
+            return False
+
+        return True
+
 class Admin(User):
     role = 'admin'
 
     def __init__(self, controller, userid):
         User.__init__(self, controller, userid)
+
+    def showUsers(self):
+        self.controller.cursor.execute("SELECT user_id, role, login FROM users")
+        return self.controller.cursor.fetchall()
 
     def getUsername(self, username):
         self.controller.cursor.execute("SELECT login FROM users WHERE login = ?", (username,))
@@ -70,6 +99,7 @@ class Admin(User):
         # add new user to users table
         self.controller.cursor.execute("INSERT INTO users VALUES(?, ?, ?, ?)", (pid, role, username, generateHashedPassword(password),))
         self.controller.connection.commit()
+        print('User {} added!'.format(username))
 
         return True
 
@@ -82,7 +112,28 @@ class Admin(User):
         # delete if username exists in users table
         self.controller.cursor.execute("DELETE FROM users WHERE login = ?", (username,))
         self.controller.connection.commit()
+        print('User {} deleted!'.format(username))
         return True
+    
+    def options(self):
+        print('-'*36)
+        displayQuery(self.controller, self.showUsers())
+        print("There are 2 options, enter the number corresponding to it:")
+        print("Add login credentials for a personnel (1)")
+        print("Delete login credentials for a personnel (2)")
+        print("Enter 'exit' to logout")
+        print('-'*36)
+        self.choice = input("Please enter an option: ")
+        if self.choice == '1':
+            username = input('Enter a username for user: ')
+            password = input('Enter a password for user: ')
+            pid = input('Enter the users pid: ')
+            role = input('Enter the users role: ')
+            self.addUser(username, password, pid, role)
+        elif self.choice == '2':
+            username = input('Enter a username for user: ')
+            self.deleteUser(username)
+
 
 class AccountManager(User):
     role = 'account manager'
@@ -110,6 +161,9 @@ class AccountManager(User):
         
         return data
 
+    def getMasterAccount(self, account_no):
+        self.controller.cursor.execute("SELECT * FROM accounts WHERE account_no = ?", (account_no,))
+        return self.controller.cursor.fetchone()
 
     def addMasterAccount(self, customer_name, contact, customer_type, start, end):
         new_id = generateID()
@@ -143,12 +197,11 @@ class AccountManager(User):
         self.controller.connection.commit()
 
         return service_no
-        
-
     
     def getSummaryReport(self, account_no):
         # returns a dict object with keys: agreements, total_price, total_expenses, waste_types for a single master account
         if not self.isManaging(account_no):
+            print("You do not have permission to access account: {}".format(account_no))
             return None
 
         # querys total services, total price, total costs, types of waste for a given account
@@ -158,6 +211,44 @@ class AccountManager(User):
         """, (account_no, ))
 
         return self.controller.cursor.fetchone()
+
+    def options(self):
+        print('-'*36)
+        print("You have 4 options, enter the number corresponding to it:")
+        print("Get master account information (1)")
+        print("Create new master account (2)")
+        print("Create new service agreement (3)")
+        print("Create summary report for customer (4)")
+        print("Enter 'exit' to logout")
+        print('-'*36)
+
+        self.choice = input("Please enter an option: ")
+        if self.choice == '1':
+            account_no = input('Enter a account_no: ')
+            # display info first, then their service agreements
+            displayRow(self.controller, self.getMasterAccount(account_no))
+            print()
+            displayQuery(self.controller, self.getServiceAgreements(account_no))
+        elif self.choice == '2':
+            name = input('Enter customer name: ')
+            contact = input('Enter customer contact info: ')
+            customer_type = input('Enter customer type: ')
+            start = input('Enter start date (YYYY-MM-DD): ')
+            end = input('Enter end date (YYYY-MM-DD): ')
+            self.addMasterAccount(name, contact, customer_type, start, end)
+            print('New master account made for {}!'.format(name))
+        elif self.choice == '3':
+            account_no = input('Enter account number: ')
+            location = input('Enter service location: ')
+            waste_type = input('Enter waste type: ')
+            schedule = input('Enter schedule memo: ')
+            contact = input('Enter contact info: ')
+            cost = input('Enter internal costs: ')
+            price = input('Enter price: ')
+            self.createServiceAgreement(account_no, location, waste_type, schedule, contact, cost, price)
+        elif self.choice == '4':
+            account_no = input('Enter account number: ')
+            displayRow(self.controller, self.getSummaryReport(account_no))
     
 
 class Supervisor(User):
@@ -211,6 +302,42 @@ class Supervisor(User):
         """, (account_no,))
 
         return self.controller.cursor.fetchone()
+
+    
+    def getManagerSummaryReport(self):
+        self.controller.cursor.execute("""
+        SELECT account_mgr, COUNT(DISTINCT(account_no)) AS total_master, COUNT(*) AS total_service, 
+        SUM(price) AS total_price, SUM(internal_cost) AS total_cost, SUM(price) - SUM(internal_cost) AS profit
+        FROM service_agreements JOIN accounts ON master_account = account_no
+        WHERE account_mgr IN (SELECT pid FROM personnel WHERE supervisor_pid = ?)
+        GROUP BY account_mgr ORDER BY profit DESC
+        """, (self.user_id,))
+
+        return self.controller.cursor.fetchall()
+
+    def options(self):
+        print('-'*36)
+        print("You have 4 options, enter the number corresponding to it:")
+        print("Add a master account under a manager (1)")
+        print("Create summary report of customer (2)")
+        print("Create summary report of manager (3)")
+        print("Enter 'exit' to logout")
+        print('-'*36)
+
+        self.choice = input("Please enter an option: ")
+        if self.choice == '1':
+            mgr_id = input('Enter supervising manager id: ')
+            name = input('Enter customer name: ')
+            contact = input('Enter customer contact info: ')
+            customer_type = input('Enter customer type: ')
+            start = input('Enter start date (YYYY-MM-DD): ')
+            end = input('Enter end date (YYYY-MM-DD): ')
+            self.addMasterAccount(mgr_id, name, contact, customer_type, start, end)
+        elif self.choice == '2':
+            account_no = input('Enter account number: ')
+            displayRow(self.controller, self.getSummaryReport(account_no))
+        elif self.choice == '3':
+            displayQuery(self.controller, self.getManagerSummaryReport())
 
 
 class Dispatcher(User):
