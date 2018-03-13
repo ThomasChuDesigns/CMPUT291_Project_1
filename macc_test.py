@@ -22,6 +22,9 @@ def main():
     x = session.addMasterAccount('thomas', '(780) 111-1111', 'industrial', '2018-02-25', '2018-03-25')
     print("Master Account Key: {}".format(x))
 
+    print("Accounts managed by {}:".format(session.user_id))
+    print("\n".join(session.getManagedAccounts()))
+
     session.createServiceAgreement(x, 'McDonalds', 'mixed waste', 'everyday', '(780) 111-1111', 250, 350)
     session.createServiceAgreement(x, 'Burger King', 'paper', 'everyday', '(780) 111-1111', 250, 237)
     session.createServiceAgreement(x, 'Wendys', 'metal', 'everyday', '(780) 111-1111', 250, 123)

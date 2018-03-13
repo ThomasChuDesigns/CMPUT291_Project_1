@@ -91,8 +91,12 @@ class AccountManager(User):
 
     def addMasterAccount(self, customer_name, contact, customer_type, start, end):
         new_id = generateID()
-        self.controller.cursor.execute("INSERT INTO accounts VALUES(?, ?, ?, ?, ?, ?, ?, 0)", (new_id, self.user_id, customer_name, contact, customer_type, start, end,))
 
+        # insert new entry to accounts using params given
+        self.controller.cursor.execute("INSERT INTO accounts VALUES(?, ?, ?, ?, ?, ?, ?, 0)", 
+        (new_id, self.user_id, customer_name, contact, customer_type, start, end,))
+
+        # commit changes to database
         self.controller.connection.commit()
         return new_id
         
@@ -120,6 +124,7 @@ class AccountManager(User):
         if not self.isManaging(account_no):
             return None
 
+        # querys total services, total price, total costs, types of waste for a given account
         self.controller.cursor.execute("""
         SELECT COUNT(*) AS count, SUM(price) AS total_price, SUM(internal_cost) AS total_cost, COUNT(DISTINCT waste_type) AS types 
         FROM service_agreements WHERE master_account = ?
@@ -127,6 +132,7 @@ class AccountManager(User):
 
         result = self.controller.cursor.fetchone()
 
+        # display report of a account
         for col_name in getColumnNames(self.controller.cursor):
             print('{:<24}'.format(col_name), end=' ')
         print('\n')

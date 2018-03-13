@@ -1,11 +1,13 @@
 from uuid import uuid4
 from hashlib import pbkdf2_hmac
-import requests
+
+import binascii
 import os
 import random
+import requests
 
-from database.controller import Controller
-from auth.util import generateID, generateHashedPassword
+from core.database.controller import Controller
+from core.auth.util import generateID, generateHashedPassword
 
 def generateUsers(role):
     # get json file of user queries from randomuser.me
@@ -54,7 +56,15 @@ def generateAccountManagers(db_controller):
     db_controller.connection.commit()
 
 def main():
-    print(generateHashedPassword('password'))
+    # creates a binary value to store into database
+    hash_name = 'sha256'
+    salt = 'ssdirf993lksiqb4'
+    iterations = 100000
+
+    password = 'password'
+
+    dk = pbkdf2_hmac(hash_name, bytearray(password, 'ascii'), bytearray(salt, 'ascii'), iterations)
+    result = int(binascii.hexlify(dk), 16)
 
 if __name__ == "__main__":
     main()
