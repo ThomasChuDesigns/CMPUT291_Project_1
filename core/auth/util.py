@@ -1,6 +1,5 @@
 from uuid import uuid4
 from hashlib import pbkdf2_hmac
-
 import binascii
 
 def generateHashedPassword(password):

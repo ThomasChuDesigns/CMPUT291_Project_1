@@ -109,10 +109,6 @@ Our repository has included test cases for all the roles. We run all our test ca
 ```
 # ALWAYS USE test_data.sql and test.db FOR TESTING
 
-/example.py				# boilerplate for testcases
-/admin_test.py			# test case for Admin
-/macc_test.py 			# test case for Account Manager
-/supervisor_test.py 	# test case for Supervisor
-/dispatcher_test.py 	# test case for Dispatcher
-/driver_test.py 		# test case for Driver
+/example.py			# boilerplate for testcases
+/testcases.py		# test case for for all roles
 ```

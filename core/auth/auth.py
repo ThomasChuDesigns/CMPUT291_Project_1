@@ -107,17 +107,6 @@ class AccountManager(User):
         # get query of all service agreements under a managed account
         self.controller.cursor.execute("SELECT * FROM service_agreements WHERE master_account = ? ORDER BY CAST(service_no AS INTEGER) DESC", (account_no,))
         data = self.controller.cursor.fetchall()
-
-        # print column names
-        for col_name in getColumnNames(self.controller.cursor):
-            print('{:<24}'.format(col_name), end=' ')
-        print('\n')
-
-        # print entries
-        for entries in data:
-            for attr in entries.keys():
-                print('{:<24}'.format(entries[attr]), end=' ')
-            print()
         
         return data
 
