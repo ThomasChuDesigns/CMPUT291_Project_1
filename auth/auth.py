@@ -91,19 +91,56 @@ class Supervisor(AccountManager):
 
 class Dispatcher(User):
     role = 'Dispatcher'
-    def __init__(self, controller, user_id):
-        pass
+    def __init__(self, connection, cursor, user_id):
+        self.connection = connection
+        self.cursor = cursor
+        self.user_id = user_id
 
     def createFulfillment(self):
-        pass
+        print('List of Service Agreements:')
+        getAllServices()
+        service_no = input('Please enter which service agreement you would like to create a fufillment for: ')
+        print('List of drivers:')
+        getAllDrivers()
+        driver = input('Please enter which driver you would like to fulfill the service: ')
+        if(checkDriverTruck(driver)):
+            truck_id = checkDriverTruck(driver)
+        else:
+            print('List of trucks:')
+            getAllTrucks()
+            truck_id = input('Enter the id of the truck you would like the driver to use: ')
+        #todo
+    
+    def printAllServices(self):
+        self.cursor.execute("SELECT service_no FROM service_agreements")
+        rows = self.cursor.fetchall()
+        print(rows)
 
+    def printAllDrivers(self):
+        self.cursor.execute("SELECT p.name, d.owned_truck_id FROM personnel p, drivers d WHERE d.pid = p.pid")
+        rows = self.cursor.fetchall()
+        print(rows)
+        
+    def getDriverTruck(self, driver):
+        self.cursor.execute("SELECT d.owned_truck_id FROM drivers d, personnel p WHERE p.name = driver AND d.pid = p.pid")
+        row = cursor.fetchone()
+        return row[0]
+    
+    def printAllTrucks(self):
+        self.cursor.execute("SELECT truck_id FROM trucks WHERE NOT EXISTS(SELECT truck_id FROM trucks, drivers d WHERE truck_id = d.owned_truck_id)") 
+        rows = self.cursor.fetchall()
+        print(rows)
+    
 class Driver(User):
     role = 'Driver'
-    def __init__(self, controller, user_id):
-        pass
+    def __init__(self, connection, cursor, user_id):
+        self.connection = connection
+        self.cursor = cursor
+        self.username = user_id
 
-    def getTasks(self):
-        pass
-
-    def getTaskInfo(self):
-        pass
+    def getTasks(starting_date, ending_date, driver_id):
+        self.cursor.execute("SELECT sf.date_time, sa.location, sa.local_contact, sa.waste_type, sf.cid_drop_off, sf.cid_pick_up FROM service agreements sa, service_fulfillments sf WHERE sf.driver_id=:driver_id  sa.service_no = sf.service_no AND sf.date_time >:starting_date AND sf.date_time<:ending_date",{"driver_id":driver_id, "starting_date":starting_date, "ending_date":ending_date})
+        
+        rows = self.cursor.fetchall()
+        return rows
+        
