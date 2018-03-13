@@ -1,5 +1,5 @@
-from database.controller import Controller
-from auth.auth import canLogin
+from core.database.controller import Controller
+from core.auth.auth import canLogin
 
 import os
 

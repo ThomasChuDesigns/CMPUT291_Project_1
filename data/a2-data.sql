@@ -24,6 +24,6 @@ INSERT INTO account_managers VALUES('23456','large accounts manager','8th Street
 INSERT INTO drivers VALUES('43743','Single Trailer','4T1BE');
 INSERT INTO drivers VALUES('23769','Single Trailer','F150A');
 
-INSERT INTO accounts VALUES('87625036','34725','Bushy Brown','(201) 874-4399','residential','2006-05-19 13:16:14.559','2018-03-01 06:50:29',837646.52);
+INSERT INTO personnel VALUES('23769','Driver 2','matloff@sbcglobal.net','Windsor Drive','55263');
 INSERT INTO accounts VALUES('11111111','12345','Ben Brown','(201) 111-1111','residential','2006-05-19 13:16:14.559','2018-02-25 06:50:29',837646.52);
 INSERT INTO accounts VALUES('22222222','23456','Bob Brown','(201) 222-2222','residential','2006-05-19 13:16:14.559','2018-01-01 06:50:29',837646.52);

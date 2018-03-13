@@ -1,4 +1,3 @@
-from database.models import readSQL
 import sqlite3
 import os
 

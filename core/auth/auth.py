@@ -55,6 +55,9 @@ class Admin(User):
 class AccountManager(User):
     role = 'Account Manager'
 
+    def __init__(self, controller, userid):
+        User.__init__(self, controller, userid)
+
     def getManagedAccounts(self):
         # queries all master accounts under account manager management
         self.controller.cursor.execute("SELECT account_no FROM accounts WHERE account_mgr = ?", (self.user_id,))

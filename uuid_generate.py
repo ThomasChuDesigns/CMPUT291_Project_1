@@ -54,8 +54,7 @@ def generateAccountManagers(db_controller):
     db_controller.connection.commit()
 
 def main():
-    # execute your code here
-    c = Controller(os.path.dirname(__file__), 'data/waste_management.db')
+    print(generateHashedPassword('password'))
 
 if __name__ == "__main__":
     main()
