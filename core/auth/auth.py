@@ -360,11 +360,20 @@ class Dispatcher(User):
             self.printAllTrucks()
             truck_id = input('Enter the id of the truck you would like the driver to use: ')
         #todo
-    
+        date_time = input('Enter the date and time you wish the service to be fulfilled in the format YYYY-MM-DD HH:MM: ')
+        insert_fulfillment = "INSERT INTO service_fulfillments date_time, master_acc, service_no, truck_id, driver_id, cid_drop_off, cid_pick_up) VALUES (:master_account, :sevice_no, :truck_id, :driver_id, :cid_drop_off, :cid_pick_up);"
+        self.controller.cursor.execute(insert_fulfillment, {"master_account":master_acc, "service_no":service_no, "truck_id":truck_id, "driver_id":driver_id, "cid_drop_off":cid_drop_off, "cid_pick_up":cid_pick_up})
+        self.controller.commit() 
+        
     def printAllServices(self):
         self.controller.cursor.execute("SELECT service_no FROM service_agreements")
         rows = self.controller.cursor.fetchall()
         print(rows)
+    
+    def getMasterAccount(self,service_num):
+        self.controller.cursor.execute("SELECT master_account FROM service_agreements")
+        row = self.controller.cursor.fetchone()  
+        return row        
 
     def printAllDrivers(self):
         self.controller.cursor.execute("SELECT p.name, d.owned_truck_id FROM personnel p, drivers d WHERE d.pid = p.pid")
