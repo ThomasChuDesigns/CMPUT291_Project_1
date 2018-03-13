@@ -1,0 +1,12 @@
+user_id                  name                     login                    password                 email                    contact                  role                     
+
+b5f6d2c8                 mary mills               tinypeacock735           storm1                   mary.mills@example.com   (776)-312-6019           account manager          
+8a11a485                 lois graves              goldenbird941            gemini                   lois.graves@example.com  (894)-509-0444           account manager          
+f3c9f99f                 jayden patterson         greendog251              daffy                    jayden.patterson@example.com (595)-251-0760           account manager          
+5c957724                 christina lewis          browngoose287            sultan                   christina.lewis@example.com (460)-935-2881           account manager          
+eda2f054                 jimmie cruz              brownmeercat239          sssssss                  jimmie.cruz@example.com  (952)-517-7628           account manager          
+457b7887                 bill black               blueduck654              maxima                   bill.black@example.com   (415)-689-9130           account manager          
+ebc8c2c7                 jonathan young           blackelephant757         lansing                  jonathan.young@example.com (070)-620-0707           account manager          
+fbe12ee3                 ron garcia               tinyrabbit475            77777                    ron.garcia@example.com   (877)-575-6574           account manager          
+540f00fe                 phyllis kelly            yellowduck505            christa                  phyllis.kelly@example.com (565)-216-5443           account manager          
+1b1bea75                 edith nguyen             lazycat772               shower                   edith.nguyen@example.com (372)-561-7090           account manager          

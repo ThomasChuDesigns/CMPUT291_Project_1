@@ -125,7 +125,7 @@ CREATE TABLE service_fulfillments (
   driver_id         TEXT,
   cid_drop_off      TEXT,
   cid_pick_up       TEXT,
-  PRIMARY KEY (date_time, master_account, service_no, truck_id, driver_id, cid_drop_off, cid_pick_up)
+  PRIMARY KEY (date_time, master_account, service_no, truck_id, driver_id, cid_drop_off, cid_pick_up),
   FOREIGN KEY (master_account, service_no) REFERENCES service_agreements,
   FOREIGN KEY (truck_id) REFERENCES trucks,
   FOREIGN KEY (driver_id) REFERENCES drivers(pid),
