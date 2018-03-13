@@ -2,11 +2,12 @@ from hashlib import pbkdf2_hmac
 from uuid import uuid4
 
 from .util import generateHashedPassword, generateID, generateServiceID
-from core.database.models import getColumnNames
+from core.database.util import getColumnNames
 
 # authenticates user and creates new user instance if credentials are correct
 def canLogin(controller, username, password):
     user_types = {
+        'admin': Admin,
         'account manager': AccountManager,
         'supervisor': Supervisor,
         'dispatcher': Dispatcher,
@@ -24,7 +25,7 @@ def canLogin(controller, username, password):
     if binary_hash == candid['password']:
         return user_types[candid['role']](controller, candid['user_id'])
 
-    print('Login unsuccessful')
+    print('Login Unsuccessful')
     return None
 
 class User:
@@ -40,18 +41,48 @@ class User:
         pass
 
 class Admin(User):
+    role = 'admin'
 
     def __init__(self, controller, userid):
-        pass
+        User.__init__(self, controller, userid)
+
+    def getUsername(self, username):
+        self.controller.cursor.execute("SELECT login FROM users WHERE login = ?", (username,))
+        return self.controller.cursor.fetchone()
     
-    def addUser(self, username, password, id, role):
-        pass
-    
-    def updateUser(self, username):
-        pass
+    def getID(self, pid, role = ''):
+        if role == 'account manager':
+            self.controller.cursor.execute("SELECT pid FROM account_managers WHERE pid = ?", (pid,))
+        elif role == 'driver':
+            self.controller.cursor.execute("SELECT pid FROM drivers WHERE pid = ?", (pid,))
+        else:
+            self.controller.cursor.execute("SELECT pid FROM personnel WHERE pid = ?", (pid,))
+
+        return self.controller.cursor.fetchone()
+
+    def addUser(self, username, password, pid, role):
+        # username exists in users table or pid not found in personnel
+        if self.getUsername(username) or not self.getID(pid, role):
+            print('ERROR: username exists already or ID does not exists in personnel list')
+            return False
+
+        
+        # add new user to users table
+        self.controller.cursor.execute("INSERT INTO users VALUES(?, ?, ?, ?)", (pid, role, username, generateHashedPassword(password),))
+        self.controller.connection.commit()
+
+        return True
+
 
     def deleteUser(self, username):
-        pass
+        # username not found in users table
+        if not self.getUsername(username):
+            return False
+
+        # delete if username exists in users table
+        self.controller.cursor.execute("DELETE FROM users WHERE login = ?", (username,))
+        self.controller.connection.commit()
+        return True
 
 class AccountManager(User):
     role = 'account manager'

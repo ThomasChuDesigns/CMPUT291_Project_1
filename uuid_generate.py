@@ -56,7 +56,7 @@ def generateAccountManagers(db_controller):
     db_controller.connection.commit()
 
 def main():
-    print(generateHashedPassword('notpassword'))
+    print(generateHashedPassword('admin'))
 
 if __name__ == "__main__":
     main()
