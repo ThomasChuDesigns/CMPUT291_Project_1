@@ -41,7 +41,7 @@ def accm(db):
     assert not session.createServiceAgreement('1', 'Burger King', 'paper', 'everyday', '(780) 111-1111', 250, 237)
     assert session.createServiceAgreement('0', 'Wendys', 'metal', 'everyday', '(780) 111-1111', 30, 50)
     assert session.createServiceAgreement('0', 'Home', 'mixed waste', 'everyday', '(780) 111-1111', 30, 50)
-
+    
     assert not session.getServiceAgreements('1')
     assert session.getServiceAgreements('0')
 
@@ -88,7 +88,17 @@ def dispatcher(db):
     assert session.getAvailableAgreements()
 
     print('All test cases passed for dispatcher!')
+def driver(db):
 
+    # insert schema and data into test db
+    readSQL(db, os.path.join(db_directory, 'p1-tables.sql'))
+    readSQL(db, os.path.join(db_directory, 'test_data.sql'))
+
+    session = canLogin(db, 'test', 'driver')
+    print(session.getTours('2018-03-10', '2018-03-12'))
+
+
+    print('All test cases passed for driver!')
 def main():
     # create a controller to test.db
     
@@ -99,7 +109,7 @@ def main():
     accm(test_db)
     supervisor(test_db)
     dispatcher(test_db)
-
+    driver(test_db)
 
 if __name__ == "__main__":
     main()

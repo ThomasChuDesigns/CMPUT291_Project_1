@@ -33,8 +33,8 @@ INSERT INTO container_waste_types VALUES('3', 'metal');
 INSERT INTO container_waste_types VALUES('2', 'paper');
 INSERT INTO container_waste_types VALUES('1', 'metal');
 
-INSERT INTO service_fulfillments VALUES('2018-3-11', '1', '0', '1', '1', '2', '1');
-INSERT INTO service_fulfillments VALUES('2018-3-10', '0', '0', '1', '1', '1', '0000');
+INSERT INTO service_fulfillments VALUES('2018-03-11', '1', '0', '1', '1', '2', '1');
+INSERT INTO service_fulfillments VALUES('2018-03-10', '0', '0', '1', '1', '1', '0000');
 
 INSERT INTO personnel VALUES('100', 'Driver 1', 'test2@gmail.com', 'Not Windsor Drive 2', '0');
 INSERT INTO personnel VALUES('101', 'Driver 2', 'test3@gmail.com', 'Not Windsor Drive 3', '0');
@@ -43,3 +43,6 @@ INSERT INTO drivers VALUES('101','Single Trailer','0');
 
 INSERT INTO trucks VALUES('12','McLaren F1','front loader');
 INSERT INTO trucks VALUES('14','Benz F1','front loader');
+
+INSERT INTO users VALUES('1', 'driver', 'test', '0b101010111010000101010000101011101100101100000110001100101110111110010010100100100010011101100000011010101111101010001110110001000011001000001111111000010110011110001101111001001000101001100010101100010110101001011111111111111101011001110000110110000110010');
+

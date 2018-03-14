@@ -412,25 +412,7 @@ class Dispatcher(User):
         self.controller.cursor.execute("SELECT master_account FROM service_agreements WHERE service_no = ?", (service_no,))
         return self.controller.cursor.fetchone()['master_account']
     
-    def createFulfillment(self):
-        print('List of Service Agreements:')
-        self.printAllServices()
-        service_no = input('Please enter which service agreement you would like to create a fufillment for: ')
-        print('List of drivers:')
-        self.printAllDrivers()
-        driver = input('Please enter which driver you would like to fulfill the service: ')
-        if(self.getDriverTruck(driver)):
-            truck_id = self.getDriverTruck(driver)
-        else:
-            print('List of trucks:')
-            self.printAllTrucks()
-            truck_id = input('Enter the id of the truck you would like the driver to use: ')
-        #todo
-        date_time = input('Enter the date and time you wish the service to be fulfilled in the format YYYY-MM-DD HH:MM: ')
-        insert_fulfillment = "INSERT INTO service_fulfillments date_time, master_acc, service_no, truck_id, driver_id, cid_drop_off, cid_pick_up) VALUES (:master_account, :sevice_no, :truck_id, :driver_id, :cid_drop_off, :cid_pick_up);"
-        self.controller.cursor.execute(insert_fulfillment, {"master_account":master_acc, "service_no":service_no, "truck_id":truck_id, "driver_id":driver_id, "cid_drop_off":cid_drop_off, "cid_pick_up":cid_pick_up})
-        self.controller.commit() 
-
+   
     def options(self):
         print('-'*36)
         print("You have 1 options, enter the number corresponding to it:")
@@ -478,9 +460,24 @@ class Driver(User):
 
     def __init__(self, controller, userid):
         User.__init__(self, controller, userid)
+    
+    def options(self):
+        print('-'*36)
+        print("You have 1 options, enter the number corresponding to it:")
+        print("Find driver tours(1)")
+        print("Enter 'exit' to logout")
+        print('-'*36)        
+        self.choice = input('Enter an option: ')
+        if self.choice == '1':        
+            start = input('What is the starting date of the tours you want to assess in the format: YYYY-MM-DD: ')
+            end = input('What is the ending date of the tours you want to assess YYYY-MM-DD: ')
+            displayQuery(self.controller, self.getTours())
+          
+        
 
-    def getTasks(self, starting_date, ending_date, driver_id):
-        self.controller.cursor.execute("SELECT sf.date_time, sa.location, sa.local_contact, sa.waste_type, sf.cid_drop_off, sf.cid_pick_up FROM service agreements sa, service_fulfillments sf WHERE sf.driver_id=:driver_id  sa.service_no = sf.service_no AND sf.date_time >:starting_date AND sf.date_time<:ending_date",{"driver_id":driver_id, "starting_date":starting_date, "ending_date":ending_date})
+    def getTours(self, starting_date, ending_date):
+        self.controller.cursor.execute("SELECT sf.date_time, sa.location, sa.local_contact, sa.waste_type, sf.cid_drop_off, sf.cid_pick_up FROM service_agreements sa, service_fulfillments sf WHERE sf.driver_id=? AND sa.service_no = sf.service_no AND sf.date_time >=? AND sf.date_time<=?",(self.user_id, starting_date, ending_date))
+        
         rows = self.controller.cursor.fetchall()
         return rows
         
