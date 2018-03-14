@@ -11,7 +11,7 @@ from core.auth.util import generateHashedPassword, generateID, createNewUser
 def main():
     # create a controller to test.db
     db_directory = os.path.join(os.path.dirname(__file__), 'data/')
-    ctrl_db = Controller(db_directory, 'test.db')
+    ctrl_db = Controller(db_directory, 'waste_management.db')
 
     user_id = generateID()
     role = input('Enter user\'s role: ')
