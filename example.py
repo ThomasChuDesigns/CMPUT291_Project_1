@@ -14,14 +14,17 @@ from core.auth.auth import canLogin, loginPrompt
 def main():
     # create a controller to test.db
     db_directory = os.path.join(os.path.dirname(__file__), 'data/')
-    test_db = Controller(db_directory, 'waste_management.db')
+    test_db = Controller(db_directory, 'test.db')
 
     # try logging in
     session = loginPrompt(test_db)
-    
-    if session:
-        print("login successful!")
 
+    if session:
+        session.show()
+
+
+    test_db.cursor.execute("SELECT * FROM accounts")
+    displayQuery(test_db, test_db.cursor.fetchall())
     test_db.connection.close()
 
 if __name__ == "__main__":

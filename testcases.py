@@ -9,12 +9,10 @@ db_directory = os.path.join(os.path.dirname(__file__), 'data/')
 # test cases to make sure program works xd
 
 def admin(db):
-    # insert schema and data into test db
-    readSQL(db, os.path.join(db_directory, 'p1-tables.sql'))
-    readSQL(db, os.path.join(db_directory, 'test_data.sql'))
-
+    db.cursor.execute("SELECT role, login FROM users")
+    displayQuery(db, db.cursor.fetchall())
     # try logging in
-    session = canLogin(db, 'owner', 'admin')
+    session = canLogin(db, 'owner', 'password')
     assert session
 
     assert session.role == 'admin'
@@ -27,9 +25,6 @@ def admin(db):
     print("Test case for admin passed!")
 
 def accm(db):
-    # insert schema and data into test db
-    readSQL(db, os.path.join(db_directory, 'p1-tables.sql'))
-    readSQL(db, os.path.join(db_directory, 'test_data.sql'))
 
     # try logging in
     session = canLogin(db, 'd4nny', 'password')
@@ -55,12 +50,8 @@ def accm(db):
 
 def supervisor(db):
 
-    # insert schema and data into test db
-    readSQL(db, os.path.join(db_directory, 'p1-tables.sql'))
-    readSQL(db, os.path.join(db_directory, 'test_data.sql'))
-
     # try logging in
-    session = canLogin(db, 'thomas', 'notpassword')
+    session = canLogin(db, 'thomas', 'password')
 
     assert session.getSupervisedAccounts()
     assert session.getSupervisedManagers()
@@ -78,28 +69,21 @@ def supervisor(db):
 
 def dispatcher(db):
 
-    # insert schema and data into test db
-    readSQL(db, os.path.join(db_directory, 'p1-tables.sql'))
-    readSQL(db, os.path.join(db_directory, 'test_data.sql'))
-
-    session = canLogin(db, 'lol', 'dispatcher')
+    session = canLogin(db, 'lol', 'password')
     assert session.getPublicTrucks()
     assert session.getTruckDriver('100')
     assert session.getAvailableAgreements()
 
     print('All test cases passed for dispatcher!')
+
 def driver(db):
 
-    # insert schema and data into test db
-    readSQL(db, os.path.join(db_directory, 'p1-tables.sql'))
-    readSQL(db, os.path.join(db_directory, 'test_data.sql'))
-
-    session = canLogin(db, 'test', 'driver')
-    print(session.getTours('2018-03-10', '2018-03-12'))
+    session = canLogin(db, 'test', 'password')
+    assert len(session.getTours('2010-03-10', '2018-03-12')) == 2
 
 
     print('All test cases passed for driver!')
-    
+
 def main():
     # create a controller to test.db
     

@@ -164,6 +164,10 @@ class AccountManager(User):
         return data
 
     def getMasterAccount(self, account_no):
+        if not self.isManaging(account_no):
+            print("You are not managing this client!")
+            return None
+
         self.controller.cursor.execute("SELECT * FROM accounts WHERE account_no = ?", (account_no,))
         return self.controller.cursor.fetchone()
 
@@ -180,6 +184,7 @@ class AccountManager(User):
         
     def createServiceAgreement(self, account_no, location, waste_type, schedule, contact, cost, price):
         if not self.isManaging(account_no):
+            print("You are not managing this client!")
             return None
 
         # generate a service_no using previous entries

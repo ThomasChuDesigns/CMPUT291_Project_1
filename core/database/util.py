@@ -36,4 +36,6 @@ def displayQuery(controller, results):
     # display body
     for row in results:
         displayRow(controller, tuple(row), False)
+    
+    print()
 
