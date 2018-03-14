@@ -21,6 +21,8 @@ def canLogin(controller, username, password):
     controller.cursor.execute("SELECT * FROM users WHERE login == ?", (username,))
     candid = controller.cursor.fetchone()
 
+    if not candid: return None
+
     # compare hashed password, if equal create new session for user
     if binary_hash == candid['password']:
         return user_types[candid['role']](controller, candid['user_id'])
@@ -353,17 +355,16 @@ class Dispatcher(User):
         waste_type = self.controller.cursor.fetchone()['waste_type']
 
         self.controller.cursor.execute("""
-        SELECT c.container_id
-        FROM (containers JOIN container_waste_types USING(container_id)) c
-        WHERE c.waste_type = ? AND NOT EXISTS (SELECT * FROM service_fulfillments s WHERE s.cid_drop_off = c.container_id)
+        SELECT container_id
+        FROM (containers JOIN container_waste_types USING(container_id))
+        WHERE waste_type = ? AND NOT EXISTS (SELECT * FROM service_fulfillments WHERE cid_drop_off = ?)
         UNION
         SELECT c.container_id
         FROM (containers JOIN container_waste_types USING(container_id)) c
         WHERE c.waste_type = ? AND 
-        (SELECT MAX(date_time) FROM service_fulfillments s WHERE s.cid_pick_up = c.container_id)
-        >
-        (SELECT MAX(date_time) FROM service_fulfillments s WHERE s.cid_drop_off = c.container_id) 
-        """, (waste_type, waste_type,))
+        (SELECT IFNULL(MAX(s.date_time), 0) FROM service_fulfillments s WHERE s.cid_pick_up = ?) >
+        (SELECT IFNULL(MAX(s.date_time), 0) FROM service_fulfillments s WHERE s.cid_drop_off = ?) 
+        """, (waste_type, cid, waste_type, cid, cid,))
 
         return self.controller.cursor.fetchall()
 
@@ -378,7 +379,9 @@ class Dispatcher(User):
         SELECT owned_truck_id FROM drivers WHERE pid = ? 
         AND owned_truck_id IN (SELECT truck_id FROM trucks)
         """, (driver_id,))
-        return self.controller.cursor.fetchone()
+        result = self.controller.cursor.fetchone()
+        if not result: return None
+        return result['owned_truck_id']
 
     def getPublicTrucks(self):
         # take only truck_id from trucks table where truck_id does not exist in any drivers entry
@@ -411,8 +414,7 @@ class Dispatcher(User):
     def getAccountFromAgreement(self, service_no):
         self.controller.cursor.execute("SELECT master_account FROM service_agreements WHERE service_no = ?", (service_no,))
         return self.controller.cursor.fetchone()['master_account']
-    
-   
+
     def options(self):
         print('-'*36)
         print("You have 1 options, enter the number corresponding to it:")

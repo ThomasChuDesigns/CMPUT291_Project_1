@@ -20,16 +20,12 @@ def main():
     readSQL(test_db, os.path.join(db_directory, 'p1-tables.sql'))
     readSQL(test_db, os.path.join(db_directory, 'test_data.sql'))
 
-    session = canLogin(test_db, 'thomas', 'notpassword')
-    print(session.getContainerToPickUp('0'))
-
     # try logging in
-    #session = loginPrompt(test_db)
+    session = loginPrompt(test_db)
 
-    #print(session.getAccountFromAgreement('3'))
-    #status = session.show()
-#    while(status):
-#        status = session.show()
+    status = session.show()
+    while(status):
+        status = session.show()
 
     test_db.connection.close()
 

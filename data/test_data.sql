@@ -33,8 +33,13 @@ INSERT INTO container_waste_types VALUES('3', 'metal');
 INSERT INTO container_waste_types VALUES('2', 'paper');
 INSERT INTO container_waste_types VALUES('1', 'metal');
 
+<<<<<<< HEAD
 INSERT INTO service_fulfillments VALUES('2018-03-11', '1', '0', '1', '1', '2', '1');
 INSERT INTO service_fulfillments VALUES('2018-03-10', '0', '0', '1', '1', '1', '0000');
+=======
+INSERT INTO service_fulfillments VALUES('2010-3-11', '1', '0', '1', '1', '2', '1');
+INSERT INTO service_fulfillments VALUES('2010-3-10', '0', '0', '1', '1', '1', '0000');
+>>>>>>> 550b238c1c96900c3f616b47572070129f00b64c
 
 INSERT INTO personnel VALUES('100', 'Driver 1', 'test2@gmail.com', 'Not Windsor Drive 2', '0');
 INSERT INTO personnel VALUES('101', 'Driver 2', 'test3@gmail.com', 'Not Windsor Drive 3', '0');
