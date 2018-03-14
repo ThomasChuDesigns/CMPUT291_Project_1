@@ -10,9 +10,8 @@ def generateHashedPassword(password):
 
     # create a byte object of hashed password, then convert to hexdecimal to binary
     dk = pbkdf2_hmac(hash_name, bytearray(password, 'ascii'), bytearray(salt, 'ascii'), iterations)
-    binary_value = bin(int(binascii.hexlify(dk), 16))
 
-    return binary_value
+    return dk
 
 def generateID():
     # creates a uuid for new users
@@ -27,4 +26,8 @@ def generateServiceID(controller):
         return 0
         
     return result[0] + 1
-    
+
+def createNewUser(controller, uid, role, login, password):
+    password = generateHashedPassword(password)
+    controller.cursor.execute("INSERT INTO users VALUES(?, ?, ?, ?)", (uid, role, login, password,))
+    controller.connection.commit()

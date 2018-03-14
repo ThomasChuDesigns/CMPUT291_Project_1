@@ -15,7 +15,7 @@ def canLogin(controller, username, password):
     }
 
     # hash the password then compare with entry in database
-    binary_hash = generateHashedPassword(password)
+    key = generateHashedPassword(password)
 
     # fetch user with same username
     controller.cursor.execute("SELECT * FROM users WHERE login == ?", (username,))
@@ -24,7 +24,7 @@ def canLogin(controller, username, password):
     if not candid: return None
 
     # compare hashed password, if equal create new session for user
-    if binary_hash == candid['password']:
+    if key == candid['password']:
         return user_types[candid['role']](controller, candid['user_id'])
 
     return None
