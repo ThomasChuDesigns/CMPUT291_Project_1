@@ -185,7 +185,7 @@ class AccountManager(User):
     def createServiceAgreement(self, account_no, location, waste_type, schedule, contact, cost, price):
         if not self.isManaging(account_no):
             print("You are not managing this client!")
-            return None
+            return False
 
         # generate a service_no using previous entries
         service_no = generateServiceID(self.controller)
@@ -203,7 +203,7 @@ class AccountManager(User):
         
         self.controller.connection.commit()
 
-        return service_no
+        return True
     
     def getSummaryReport(self, account_no):
         # returns a dict object with keys: agreements, total_price, total_expenses, waste_types for a single master account
@@ -478,7 +478,7 @@ class Driver(User):
         if self.choice == '1':        
             start = input('What is the starting date of the tours you want to assess in the format: YYYY-MM-DD: ')
             end = input('What is the ending date of the tours you want to assess YYYY-MM-DD: ')
-            displayQuery(self.controller, self.getTours())
+            displayQuery(self.controller, self.getTours(start, end))
           
         
 

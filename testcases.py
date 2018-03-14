@@ -34,13 +34,11 @@ def accm(db):
 
     assert not session.createServiceAgreement('1', 'McDonalds', 'mixed waste', 'everyday', '(780) 111-1111', 250, 350)
     assert not session.createServiceAgreement('1', 'Burger King', 'paper', 'everyday', '(780) 111-1111', 250, 237)
-    assert session.createServiceAgreement('0', 'Wendys', 'metal', 'everyday', '(780) 111-1111', 30, 50)
-    assert session.createServiceAgreement('0', 'Home', 'mixed waste', 'everyday', '(780) 111-1111', 30, 50)
-    
-    assert not session.getServiceAgreements('1')
-    assert session.getServiceAgreements('0')
 
-    summary = session.getSummaryReport('0')
+    assert not session.getServiceAgreements('1')
+    assert session.getServiceAgreements('142')
+
+    summary = session.getSummaryReport('142')
     
     assert summary
     print(tuple(summary))
@@ -60,7 +58,7 @@ def supervisor(db):
     assert session.addMasterAccount('6969', 'fail', '(780) 111-1111', 'industrial', '2018-02-25', '2018-03-25') == None
     assert session.addMasterAccount('111111', 'pass', '(780) 111-1111', 'industrial', '2018-02-25', '2018-03-25')
 
-    assert session.getSummaryReport('0')
+    assert session.getSummaryReport('142')
     assert session.getSummaryReport('1')
 
     assert session.getManagerSummaryReport()

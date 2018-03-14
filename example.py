@@ -5,26 +5,22 @@ from core.database.util import readSQL, displayQuery, displayRow
 
 from core.auth.auth import canLogin, loginPrompt
 
-# An example testcase, logging in to an account from example_data.sql and ran on test.db 
-#
-#
-#
-#
+# Access the test database with this
 
 def main():
     # create a controller to test.db
     db_directory = os.path.join(os.path.dirname(__file__), 'data/')
     test_db = Controller(db_directory, 'test.db')
 
+    test_db.cursor.execute("SELECT * FROM service_agreements")
+    displayQuery(test_db, test_db.cursor.fetchall())
+
     # try logging in
     session = loginPrompt(test_db)
 
-    if session:
-        session.show()
+    while(session.show()):
+        pass
 
-
-    test_db.cursor.execute("SELECT * FROM accounts")
-    displayQuery(test_db, test_db.cursor.fetchall())
     test_db.connection.close()
 
 if __name__ == "__main__":
