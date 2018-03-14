@@ -12,9 +12,6 @@ def main():
     db_directory = os.path.join(os.path.dirname(__file__), 'data/')
     test_db = Controller(db_directory, 'test.db')
 
-    test_db.cursor.execute("SELECT * FROM service_agreements")
-    displayQuery(test_db, test_db.cursor.fetchall())
-
     # try logging in
     session = loginPrompt(test_db)
 

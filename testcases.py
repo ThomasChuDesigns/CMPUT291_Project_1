@@ -4,6 +4,7 @@ from core.database.controller import Controller
 from core.database.util import readSQL, displayQuery, displayRow
 
 from core.auth.auth import canLogin
+from core.auth.util import createNewUser
 
 db_directory = os.path.join(os.path.dirname(__file__), 'data/')
 # test cases to make sure program works xd
@@ -34,6 +35,8 @@ def accm(db):
 
     assert not session.createServiceAgreement('1', 'McDonalds', 'mixed waste', 'everyday', '(780) 111-1111', 250, 350)
     assert not session.createServiceAgreement('1', 'Burger King', 'paper', 'everyday', '(780) 111-1111', 250, 237)
+    assert session.createServiceAgreement('142', 'McDonalds', 'mixed waste', 'everyday', '(780) 111-1111', 250, 350)
+    assert session.createServiceAgreement('142', 'Burger King', 'metal', 'everyday', '(780) 111-1111', 250, 237)
 
     assert not session.getServiceAgreements('1')
     assert session.getServiceAgreements('142')
@@ -86,6 +89,16 @@ def main():
     # create a controller to test.db
     
     test_db = Controller(db_directory, 'test.db')
+    # insert schema and data into test db
+    readSQL(test_db, os.path.join(db_directory, 'p1-tables.sql'))
+    readSQL(test_db, os.path.join(db_directory, 'test_data.sql'))
+
+    createNewUser(test_db, '111110', 'account manager', 'bobby', 'password')
+    createNewUser(test_db, '12345', 'admin', 'owner', 'password')
+    createNewUser(test_db, '1', 'driver', 'test', 'password')
+    createNewUser(test_db, '300', 'dispatcher', 'lol', 'password')
+    createNewUser(test_db, '111111', 'account manager', 'd4nny', 'password')
+    createNewUser(test_db, '222222', 'supervisor', 'thomas', 'password')
 
     # run role testcases here
     admin(test_db)

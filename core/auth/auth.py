@@ -31,6 +31,8 @@ def canLogin(controller, username, password):
 
 def loginPrompt(controller):
     attempts = 0
+    controller.cursor.execute("SELECT user_id, role, login FROM users")
+    displayQuery(controller, controller.cursor.fetchall())
     while(attempts < 3):
         username = input('Enter Username: ')
         password = input('Enter Password: ')
@@ -142,6 +144,7 @@ class AccountManager(User):
 
     def __init__(self, controller, userid):
         User.__init__(self, controller, userid)
+        self.custoemr_types = ("municipal", "commercial", "industrial", "residential")
 
     def isManaging(self, account_no):
         self.controller.cursor.execute("SELECT account_no FROM accounts WHERE account_no = ? AND account_mgr = ?", (account_no, self.user_id, ))
@@ -150,7 +153,7 @@ class AccountManager(User):
     def getManagedAccounts(self):
         # queries all master accounts under account manager management
         self.controller.cursor.execute("SELECT account_no FROM accounts WHERE account_mgr = ?", (self.user_id,))
-        return list(map(lambda x: x['account_no'], self.controller.cursor.fetchall()))
+        return self.controller.cursor.fetchall()
 
     def getServiceAgreements(self, account_no):
         # get information of master account if account is under user's management
@@ -231,6 +234,7 @@ class AccountManager(User):
 
         self.choice = input("Please enter an option: ")
         if self.choice == '1':
+            displayQuery(self.controller, self.getManagedAccounts())
             account_no = input('Enter a account_no: ')
             # display info first, then their service agreements
             displayRow(self.controller, self.getMasterAccount(account_no))
@@ -240,6 +244,11 @@ class AccountManager(User):
             name = input('Enter customer name: ')
             contact = input('Enter customer contact info: ')
             customer_type = input('Enter customer type: ')
+
+            if(customer_type not in self.custoemr_types):
+                print("customer type not valid!")
+                return
+
             start = input('Enter start date (YYYY-MM-DD): ')
             end = input('Enter end date (YYYY-MM-DD): ')
             self.addMasterAccount(name, contact, customer_type, start, end)
@@ -254,6 +263,7 @@ class AccountManager(User):
             price = input('Enter price: ')
             self.createServiceAgreement(account_no, location, waste_type, schedule, contact, cost, price)
         elif self.choice == '4':
+            displayQuery(self.controller, self.getManagedAccounts())
             account_no = input('Enter account number: ')
             displayRow(self.controller, self.getSummaryReport(account_no))
     
@@ -263,19 +273,19 @@ class Supervisor(User):
         User.__init__(self, controller, userid)
 
     def isSupervising(self, mgr_id):
-        return mgr_id in self.getSupervisedManagers()
+        return mgr_id in list(map(lambda x: x['pid'], self.getSupervisedManagers()))
     
     def getSupervisedAccounts(self):
         # queries all account id's under account managers supervised by this user
         # returns a list of the account id's
 
         self.controller.cursor.execute("SELECT account_no FROM accounts WHERE account_mgr IN (SELECT pid FROM personnel WHERE supervisor_pid = ?)", (self.user_id,))
-        return list(map(lambda x: x['account_no'], self.controller.cursor.fetchall()))
+        return self.controller.cursor.fetchall()
 
     def getSupervisedManagers(self):
         # queries all pid under supervision of session user id
         self.controller.cursor.execute("SELECT pid FROM personnel WHERE supervisor_pid = ?", (self.user_id,))
-        return list(map(lambda x: x['pid'], self.controller.cursor.fetchall())) 
+        return self.controller.cursor.fetchall()
 
     def addMasterAccount(self, mgr_id, customer_name, contact, customer_type, start, end):
         # inserts a new master account into accounts table under a supervised manager
@@ -298,7 +308,7 @@ class Supervisor(User):
 
     def getSummaryReport(self, account_no):
         # if successful, returns a dictionary of reported values (# of services, total price, total cost, waste types)
-        if not account_no in self.getSupervisedAccounts():
+        if not account_no in list(map(lambda x: x['account_no'], self.getSupervisedAccounts())):
             print("You do not have permission to access account: {}".format(account_no))
             return None
         
@@ -333,6 +343,7 @@ class Supervisor(User):
 
         self.choice = input("Please enter an option: ")
         if self.choice == '1':
+            displayQuery(self.controller, self.getSupervisedManagers())
             mgr_id = input('Enter supervising manager id: ')
             name = input('Enter customer name: ')
             contact = input('Enter customer contact info: ')
@@ -341,6 +352,7 @@ class Supervisor(User):
             end = input('Enter end date (YYYY-MM-DD): ')
             self.addMasterAccount(mgr_id, name, contact, customer_type, start, end)
         elif self.choice == '2':
+            displayQuery(self.controller, self.getSupervisedAccounts())
             account_no = input('Enter account number: ')
             displayRow(self.controller, self.getSummaryReport(account_no))
         elif self.choice == '3':
@@ -373,9 +385,33 @@ class Dispatcher(User):
 
         return self.controller.cursor.fetchall()
 
+    def getAvailabeContainers(self, service_no):
+        self.controller.cursor.execute("""
+        SELECT waste_type FROM service_agreements WHERE service_no = ?
+        """, (service_no,))
+        waste_type = self.controller.cursor.fetchone()['waste_type']
+
+        self.controller.cursor.execute("""
+        SELECT container_id
+        FROM (containers JOIN container_waste_types USING(container_id))
+        WHERE waste_type = ? AND NOT EXISTS (SELECT * FROM service_fulfillments WHERE cid_drop_off = container_id)
+        UNION
+        SELECT c.container_id
+        FROM (containers JOIN container_waste_types USING(container_id)) c
+        WHERE c.waste_type = ? AND 
+        (SELECT IFNULL(MAX(s.date_time), 0) FROM service_fulfillments s WHERE s.cid_pick_up = c.container_id) >
+        (SELECT IFNULL(MAX(s.date_time), 0) FROM service_fulfillments s WHERE s.cid_drop_off = c.container_id) 
+        """, (waste_type, waste_type,))
+
+        return self.controller.cursor.fetchall()
+
     def getAvailableAgreements(self):
         # from all services select only those whose service number is not in fulfillments table
         self.controller.cursor.execute("SELECT service_no FROM service_agreements EXCEPT SELECT service_no FROM service_fulfillments")
+        return self.controller.cursor.fetchall()
+
+    def getDrivers(self):
+        self.controller.cursor.execute("SELECT pid FROM drivers")
         return self.controller.cursor.fetchall()
     
     def getTruckDriver(self, driver_id):
@@ -435,6 +471,8 @@ class Dispatcher(User):
 
             service_no = input('Enter service_no to fulfill: ')
             account_no = self.getAccountFromAgreement(service_no)
+            print("List of Available Drivers: ")
+            displayQuery(self.controller, self.getDrivers())
             driver = input('Enter driver\'s id to fulfill task: ')
 
             # determine if driver owns a truck
@@ -448,6 +486,9 @@ class Dispatcher(User):
             pick_up = self.getContainerToPickUp(service_no)
 
             # drop off a container that is available
+            print("List of available containers: ")
+            displayQuery(self.controller, self.getAvailabeContainers(service_no))
+
             drop_off = input('Enter cid for drop off: ')
             if not self.isAvailableContainer(service_no, drop_off): 
                 print('container is not available for drop off!')
@@ -459,7 +500,7 @@ class Dispatcher(User):
             (date, account_no, service_no, truck, driver, drop_off, pick_up,))
 
             self.controller.connection.commit()
-            self.controller.cursor.execute("SELECT * FROM service_fulfillments")
+            self.controller.cursor.execute("SELECT * FROM service_fulfillments ORDER BY service_no DESC")
             displayQuery(self.controller, self.controller.cursor.fetchall())
     
 class Driver(User):

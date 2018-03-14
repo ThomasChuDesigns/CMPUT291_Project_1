@@ -22,10 +22,16 @@ INSERT INTO service_agreements VALUES('1', '142', 'Wendys', 'metal', 'everyday',
 INSERT INTO service_agreements VALUES('2', '1', 'Wendys', 'paper', 'everyday', '(780) 111-1111', 20, 50);
 INSERT INTO service_agreements VALUES('3', '1', 'Wendys', 'mixed waste', 'everyday', '(780) 111-1111', 0, 50);
 
+INSERT INTO containers VALUES('6', 'roll-off', '2017-05-23');
+INSERT INTO containers VALUES('5', 'roll-off', '2017-05-23');
+INSERT INTO containers VALUES('4', 'roll-off', '2017-05-23');
 INSERT INTO containers VALUES('3', 'roll-off', '2017-05-23');
 INSERT INTO containers VALUES('2', 'roll-off', '2017-05-23');
 INSERT INTO containers VALUES('1', 'roll-off', '2017-05-23');
 
+INSERT INTO container_waste_types VALUES('6', 'metal');
+INSERT INTO container_waste_types VALUES('5', 'mixed waste');
+INSERT INTO container_waste_types VALUES('4', 'paper');
 INSERT INTO container_waste_types VALUES('3', 'metal');
 INSERT INTO container_waste_types VALUES('2', 'paper');
 INSERT INTO container_waste_types VALUES('1', 'metal');
