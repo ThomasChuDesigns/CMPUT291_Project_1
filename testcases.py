@@ -36,7 +36,7 @@ def accm(db):
     assert not session.createServiceAgreement('1', 'McDonalds', 'mixed waste', 'everyday', '(780) 111-1111', 250, 350)
     assert not session.createServiceAgreement('1', 'Burger King', 'paper', 'everyday', '(780) 111-1111', 250, 237)
     assert session.createServiceAgreement('142', 'McDonalds', 'mixed waste', 'everyday', '(780) 111-1111', 250, 350)
-    assert session.createServiceAgreement('142', 'Burger King', 'metal', 'everyday', '(780) 111-1111', 250, 237)
+    assert session.createServiceAgreement('142', 'Burger King', 'paper', 'everyday', '(780) 111-1111', 250, 237)
 
     assert not session.getServiceAgreements('1')
     assert session.getServiceAgreements('142')

@@ -84,14 +84,30 @@ class Admin(User):
         return self.controller.cursor.fetchone()
     
     def getID(self, pid, role = ''):
+        self.controller.cursor.execute("SELECT * FROM personnel JOIN users ON pid = user_id WHERE pid = ?", (pid,))
+        if self.controller.cursor.fetchall():
+            return None
+
         if role == 'account manager':
             self.controller.cursor.execute("SELECT pid FROM account_managers WHERE pid = ?", (pid,))
         elif role == 'driver':
             self.controller.cursor.execute("SELECT pid FROM drivers WHERE pid = ?", (pid,))
         else:
+            self.controller.cursor.execute("SELECT pid FROM drivers WHERE pid = ?", (pid,))
+            results = self.controller.cursor.fetchall()
+            if results: return None
+
+            self.controller.cursor.execute("SELECT pid FROM account_managers WHERE pid = ?", (pid,))
+            results = self.controller.cursor.fetchall()
+            if results: return None
+
             self.controller.cursor.execute("SELECT pid FROM personnel WHERE pid = ?", (pid,))
 
         return self.controller.cursor.fetchone()
+
+    def showPersonnels(self):
+        self.controller.cursor.execute("SELECT * FROM personnel WHERE pid NOT IN(SELECT user_id FROM users)")
+        return self.controller.cursor.fetchall()
 
     def addUser(self, username, password, pid, role):
         # username exists in users table or pid not found in personnel
@@ -106,7 +122,6 @@ class Admin(User):
         print('User {} added!'.format(username))
 
         return True
-
 
     def deleteUser(self, username):
         # username not found in users table
@@ -129,6 +144,9 @@ class Admin(User):
         print('-'*36)
         self.choice = input("Please enter an option: ")
         if self.choice == '1':
+            print("All Personnels without login")
+            displayQuery(self.controller, self.showPersonnels())
+            print('-'*36)
             username = input('Enter a username for user: ')
             password = input('Enter a password for user: ')
             pid = input('Enter the users pid: ')
